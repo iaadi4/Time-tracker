@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Time Tracker",
+  "version": "1.0.0",
+  "description": "Track your web activity beautifully.",
+  "permissions": ["tabs", "storage", "unlimitedStorage", "idle", "alarms"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Time Tracker"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
