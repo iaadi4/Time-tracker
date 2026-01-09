@@ -12,7 +12,7 @@
  * - chrome.alarms: Periodic save every 1 minute
  */
 
-import { saveTime, getSettings } from "../utils/storage";
+import { saveTime, getSettings, incrementVisitCount } from "../utils/storage";
 
 // Storage keys for tracking state (prefixed with _ to avoid conflicts)
 const STORAGE_KEYS = {
@@ -25,6 +25,12 @@ type TrackingState = {
   _currentUrl?: string;
   _startTime?: number;
   _favicon?: string;
+};
+
+// Visit debouncing state
+let _lastVisit = {
+  domain: "",
+  timestamp: 0,
 };
 
 /**
@@ -90,10 +96,23 @@ async function commitTime(): Promise<void> {
 /**
  * Starts tracking a new URL. Stores the URL and current timestamp.
  */
-async function startTracking(url: string): Promise<void> {
+async function startTracking(url: string, trackVisit = false): Promise<void> {
   const domain = getDomain(url);
 
   if (domain) {
+    // If this is a navigation to a new domain, increment visit count
+    if (trackVisit) {
+      const now = Date.now();
+      // Debounce visits: Ignore if same domain within 5 seconds
+      const isDuplicate =
+        domain === _lastVisit.domain && now - _lastVisit.timestamp < 5000;
+
+      if (!isDuplicate) {
+        await incrementVisitCount(domain, getFavicon(url));
+        _lastVisit = { domain, timestamp: now };
+      }
+    }
+
     await chrome.storage.local.set({
       [STORAGE_KEYS.CURRENT_URL]: url,
       [STORAGE_KEYS.START_TIME]: Date.now(),
@@ -124,7 +143,7 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
   try {
     const tab = await chrome.tabs.get(activeInfo.tabId);
     if (tab.url) {
-      await startTracking(tab.url);
+      await startTracking(tab.url, true); // Track visit on tab switch
     }
   } catch {
     // Tab may have been closed
@@ -135,7 +154,22 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 chrome.tabs.onUpdated.addListener(async (_, changeInfo, tab) => {
   if (changeInfo.status === "complete" && tab.active && tab.url) {
     await commitTime();
-    await startTracking(tab.url);
+    await startTracking(tab.url, true); // Track visit on navigation
+  }
+});
+
+// SPA Navigation (History API)
+chrome.webNavigation?.onHistoryStateUpdated?.addListener(async (details) => {
+  if (details.frameId === 0) {
+    try {
+      const tab = await chrome.tabs.get(details.tabId);
+      if (tab.active) {
+        await commitTime();
+        await startTracking(details.url, true);
+      }
+    } catch {
+      // Tab may have been closed
+    }
   }
 });
 

@@ -3,6 +3,7 @@ export interface DailyData {
     time: number; // milliseconds
     favicon: string;
     lastVisited: number; // timestamp
+    visitCount: number; // number of visits per day
   };
 }
 
@@ -22,6 +23,8 @@ export interface AggregatedData {
     domain: string;
     time: number;
     favicon: string;
+    visitCount: number;
+    lastVisited: number;
   }[];
 }
 
@@ -33,4 +36,43 @@ export interface Insights {
     time: number;
   } | null;
   dailyAverage: number;
+}
+
+// Site Analysis types
+export interface SiteAnalysisData {
+  domain: string;
+  favicon: string;
+  totalTime: number;
+  totalVisits: number;
+  totalActiveDays: number;
+  firstUsed: string; // date string YYYY-MM-DD
+  lastUsed: number; // timestamp
+
+  // Daily breakdown for charts
+  dailyData: {
+    date: string;
+    time: number;
+    visits: number;
+  }[];
+
+  // Heat map data (last ~26 weeks)
+  heatMapData: {
+    date: string;
+    time: number;
+    intensity: number; // 0-4 scale
+  }[];
+}
+
+export interface TrendMetrics {
+  activeDays: number;
+  totalDays: number;
+  maxDailyTime: number;
+  avgDailyTime: number;
+  maxDailyVisits: number;
+  avgDailyVisits: number;
+  totalTime: number;
+  totalVisits: number;
+  // Comparison to previous period
+  timeChange: number; // percentage
+  visitsChange: number; // percentage
 }
