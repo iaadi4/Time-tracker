@@ -3,9 +3,16 @@ import type {
   DailyData,
   AggregatedData,
   TimeRange,
+  Insights,
+  Settings,
 } from "./types";
 
 const WHITELIST_KEY = "whitelist";
+const SETTINGS_KEY = "settings";
+
+const DEFAULT_SETTINGS: Settings = {
+  trackingDelaySeconds: 15,
+};
 
 export const getTodayKey = (): string => {
   const date = new Date();
@@ -49,6 +56,19 @@ export const removeFromWhitelist = async (domain: string): Promise<void> => {
   const whitelist = data[WHITELIST_KEY] || [];
   const newWhitelist = whitelist.filter((d: string) => d !== domain);
   await setStorageData({ [WHITELIST_KEY]: newWhitelist });
+};
+
+export const getSettings = async (): Promise<Settings> => {
+  const data = await getStorageData(SETTINGS_KEY);
+  return (data[SETTINGS_KEY] as Settings) || DEFAULT_SETTINGS;
+};
+
+export const setSettings = async (
+  settings: Partial<Settings>
+): Promise<void> => {
+  const current = await getSettings();
+  const updated = { ...current, ...settings };
+  await setStorageData({ [SETTINGS_KEY]: updated });
 };
 
 export const saveTime = async (
@@ -150,4 +170,65 @@ export const getAggregatedData = async (
   const totalTime = byDomain.reduce((acc, curr) => acc + curr.time, 0);
 
   return { totalTime, byDomain };
+};
+
+export const getInsights = async (range: TimeRange): Promise<Insights> => {
+  const data = await getStorageData(null);
+  const today = new Date();
+
+  let totalTime = 0;
+  let daysCount = 0;
+  let mostActiveDay = { date: "", time: 0 };
+
+  Object.keys(data).forEach((key) => {
+    if (key === WHITELIST_KEY) return;
+    if (!key.match(/^\d{4}-\d{2}-\d{2}$/)) return;
+
+    const date = new Date(key);
+    let include = false;
+
+    const diffTime = Math.abs(today.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    switch (range) {
+      case "today":
+        include = key === getTodayKey();
+        break;
+      case "week":
+        include = diffDays <= 7;
+        break;
+      case "month":
+        include = diffDays <= 30;
+        break;
+      case "year":
+        include = diffDays <= 365;
+        break;
+      case "all-time":
+        include = true;
+        break;
+    }
+
+    if (include) {
+      const dayData = data[key] as DailyData;
+      let dayTotal = 0;
+      Object.values(dayData).forEach((site) => {
+        dayTotal += site.time;
+      });
+
+      if (dayTotal > 0) {
+        // Only count active days
+        totalTime += dayTotal;
+        daysCount++;
+
+        if (dayTotal > mostActiveDay.time) {
+          mostActiveDay = { date: key, time: dayTotal };
+        }
+      }
+    }
+  });
+
+  return {
+    mostActiveDay: mostActiveDay.time > 0 ? mostActiveDay : null,
+    dailyAverage: daysCount > 0 ? totalTime / daysCount : 0,
+  };
 };

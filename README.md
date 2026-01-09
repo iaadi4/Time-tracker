@@ -2,16 +2,15 @@
 
 A beautiful Chrome extension that tracks your time spent across all websites. Built with React, TypeScript, and Tailwind CSS.
 
-<img width="1861" height="958" alt="image" src="https://github.com/user-attachments/assets/ad3c1a00-2b6b-4094-870e-80953db9feb1" />
-
-
 ## Features
 
-- *Real-time Tracking** - Automatically tracks time spent on every website
-- **Daily Focus Score** - See your total active time at a glance
-- **Visual Analytics** - Beautiful charts showing your browsing distribution
-- **Dark Mode** - Easy on the eyes with a stunning dark theme
-- **Lightweight** - Minimal resource usage with event-driven architecture
+- **Real-time Tracking** - Automatically tracks time spent on every website
+- **Configurable Delay** - Set how long you need to stay on a site before tracking starts (1-100 seconds)
+- **Excluded Sites** - Add domains that shouldn't be tracked
+- **Visual Analytics** - Beautiful pie charts showing your browsing distribution
+- **Time Ranges** - View data for Today, Week, Month, or All Time
+- **Smart Metrics** - Avg Per Site (today) or Daily Average (other ranges)
+- **Dark Theme** - Sleek dark interface with red accent colors
 - **Privacy First** - All data stored locally, never sent to any server
 
 ## Installation
@@ -43,15 +42,12 @@ A beautiful Chrome extension that tracks your time spent across all websites. Bu
    - Click "Load unpacked"
    - Select the `dist` folder
 
-### From Chrome Web Store
-
-Coming soon!
-
 ## Usage
 
-1. **Popup Widget** - Click the extension icon to see your daily focus score and top sites
-2. **Full Dashboard** - Click "Full Dashboard" for detailed analytics with charts
-3. **Time Ranges** - View data for Today, Week, Month, or All Time
+- **Popup Widget** - Click the extension icon to see your daily stats and top sites
+- **Full Dashboard** - Click "Full Dashboard" for detailed analytics
+- **Settings** - Configure tracking delay (seconds to wait before counting a visit)
+- **Excluded Sites** - Add domains you don't want tracked
 
 ## Tech Stack
 
@@ -62,33 +58,40 @@ Coming soon!
 - **Recharts** - Data visualization
 - **Lucide React** - Icons
 
+## Project Structure
+
+```
+src/
+├── background/          # Service worker for tracking
+├── dashboard/
+│   ├── index.tsx        # Main dashboard component
+│   └── components/      # Reusable UI components
+│       ├── StatCard.tsx
+│       ├── ActivityList.tsx
+│       ├── DistributionChart.tsx
+│       ├── WhitelistView.tsx
+│       └── SettingsView.tsx
+├── popup/               # Toolbar popup widget
+├── newtab/              # New tab page
+└── utils/
+    ├── storage.ts       # Chrome storage utilities
+    ├── types.ts         # TypeScript interfaces
+    └── format.ts        # Time formatting utilities
+```
+
 ## Development
 
 ```bash
-# Start development server (for testing popup/dashboard in browser)
-npm run dev
-
-# Run linting
-npm run lint
-
-# Build for production
-npm run build
+npm run dev      # Development server
+npm run build    # Production build
+npm run lint     # Run ESLint
 ```
-
-## How It Works
-
-The extension uses Chrome's Manifest V3 with a service worker that:
-
-1. **Listens for events** - Tab switches, navigation, window focus changes
-2. **Stores state in `chrome.storage`** - Persists across service worker restarts
-3. **Calculates time on each event** - `duration = now - startTime`
-4. **Aggregates by domain** - Groups time by website hostname
 
 ## Privacy
 
-- All data is stored locally in your browser using `chrome.storage.local`
+- All data is stored locally using `chrome.storage.local`
 - No data is ever sent to external servers
-- No analytics or tracking of any kind
+- No analytics or tracking
 
 ## Contributing
 

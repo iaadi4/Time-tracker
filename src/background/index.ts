@@ -12,7 +12,7 @@
  * - chrome.alarms: Periodic save every 1 minute
  */
 
-import { saveTime } from "../utils/storage";
+import { saveTime, getSettings } from "../utils/storage";
 
 // Storage keys for tracking state (prefixed with _ to avoid conflicts)
 const STORAGE_KEYS = {
@@ -77,8 +77,12 @@ async function commitTime(): Promise<void> {
   const duration = Date.now() - data._startTime;
   const domain = getDomain(data._currentUrl);
 
-  // Only save if user spent at least 15 seconds on the site (and less than 5 minutes per event)
-  if (domain && duration >= 15000 && duration <= 300000) {
+  // Get configurable minimum delay from settings
+  const settings = await getSettings();
+  const minDuration = settings.trackingDelaySeconds * 1000;
+
+  // Only save if user spent at least the configured time on the site (and less than 5 minutes per event)
+  if (domain && duration >= minDuration && duration <= 300000) {
     await saveTime(domain, duration, data._favicon || "");
   }
 }

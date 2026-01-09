@@ -1,6 +1,6 @@
 # Contributing to Time Tracker
 
-Thank you for your interest in contributing! This document provides guidelines for contributing to the Time Tracker extension.
+Thank you for your interest in contributing!
 
 ## Getting Started
 
@@ -9,9 +9,7 @@ Thank you for your interest in contributing! This document provides guidelines f
 3. Install dependencies: `npm install`
 4. Create a feature branch: `git checkout -b feature/your-feature-name`
 
-## Development Workflow
-
-### Building
+## Development
 
 ```bash
 npm run build    # Production build
@@ -26,66 +24,48 @@ npm run lint     # Run ESLint
 3. Click the refresh icon on the extension card
 4. Test your changes
 
-### Code Style
-
-- Use TypeScript for all new code
-- Follow existing naming conventions
-- Keep components small and focused
-- Use meaningful variable and function names
-
 ## Project Architecture
 
-### Background Script (`src/background/index.ts`)
+```
+src/
+├── background/index.ts      # Service worker (event-driven tracking)
+├── dashboard/
+│   ├── index.tsx            # Main dashboard
+│   └── components/          # UI components
+├── popup/index.tsx          # Toolbar popup
+├── utils/
+│   ├── storage.ts           # Chrome storage API
+│   ├── types.ts             # TypeScript types
+│   └── format.ts            # Formatting utilities
+```
 
-The service worker handles time tracking:
+### Key Files
 
-- Event-driven (wakes on tab/window events)
-- Stores state in `chrome.storage.local`
-- Calculates time deltas on each event
+- **background/index.ts** - Handles tab/window events, calculates time deltas
+- **utils/storage.ts** - `saveTime()`, `getSettings()`, `getAggregatedData()`
+- **dashboard/components/** - Reusable UI: StatCard, ActivityList, DistributionChart
 
-### Popup (`src/popup/index.tsx`)
+## Code Style
 
-The toolbar popup widget:
-
-- Shows daily summary
-- Displays top sites
-- Links to full dashboard
-
-### Dashboard (`src/dashboard/index.tsx`)
-
-The full analytics view:
-
-- Time range filtering
-- Pie chart visualization
-- Detailed site list
-
-### Storage (`src/utils/storage.ts`)
-
-Chrome storage utilities:
-
-- `saveTime()` - Saves time for a domain
-- `getAggregatedData()` - Retrieves aggregated stats
-- `getTodayKey()` - Gets today's date key
+- Use TypeScript for all new code
+- Follow existing patterns
+- Keep components small and focused
+- Use meaningful names
 
 ## Pull Request Process
 
-1. Ensure your code passes `npm run lint`
+1. Ensure `npm run lint` passes
 2. Update documentation if needed
 3. Write a clear PR description
-4. Link any related issues
 
 ## Reporting Issues
 
-When reporting bugs, please include:
+Include:
 
 - Chrome version
 - Steps to reproduce
 - Expected vs actual behavior
 - Console errors (if any)
-
-## Code of Conduct
-
-Be respectful and constructive in all interactions.
 
 ## Questions?
 

@@ -6,9 +6,14 @@ export interface DailyData {
   };
 }
 
+export interface Settings {
+  trackingDelaySeconds: number; // 1-100, default 15
+}
+
 export interface StorageData {
   whitelist?: string[];
-  [dateKey: string]: DailyData | string[] | undefined;
+  settings?: Settings;
+  [dateKey: string]: DailyData | string[] | Settings | undefined;
 }
 
 export interface AggregatedData {
@@ -21,3 +26,11 @@ export interface AggregatedData {
 }
 
 export type TimeRange = "today" | "week" | "month" | "year" | "all-time";
+
+export interface Insights {
+  mostActiveDay: {
+    date: string;
+    time: number;
+  } | null;
+  dailyAverage: number;
+}
